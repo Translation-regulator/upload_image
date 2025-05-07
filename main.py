@@ -16,15 +16,11 @@ async def form_page(request: Request):
     posts = get_all_posts()
     return templates.TemplateResponse("upload_form.html", {"request": request, "posts": posts})
 
-@app.post("/upload", response_class=HTMLResponse)
-async def upload(request: Request, description: str = Form(...), file: UploadFile = File(...)):
+from fastapi.responses import RedirectResponse
+
+@app.post("/upload")
+async def upload(description: str = Form(...), file: UploadFile = File(...)):
     image_url = upload_image_to_s3(file)
     insert_post(description, image_url)
-    posts = get_all_posts()
-    return templates.TemplateResponse("upload_form.html", {
-        "request": request,
-        "msg": "✅ 上傳成功！",
-        "image_url": image_url,
-        "description": description,
-        "posts": posts
-    })
+    return RedirectResponse(url="/", status_code=303)
+
